@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polar Store — Admin Dashboard & Chatbot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ice:#a8d8f0; --ice2:#6ab4e0; --ice3:#3a8ab8; --ice-glow:rgba(168,216,240,0.15);
+  --bg:#080e1a; --bg2:#0c1525; --bg3:#101d30;
+  --surface:#111e33; --surface2:#162540; --surface3:#1a2c4a;
+  --border:rgba(168,216,240,0.09); --border2:rgba(168,216,240,0.2);
+  --text:#b8d0e8; --text2:#6a8aaa; --white:#eef6ff;
+  --green:#00e67a; --amber:#ffb800; --red:#ff4455; --purple:#a78bfa;
+  --wa:#25D366;
+  --grad:linear-gradient(135deg,#a8d8f0,#6ab4e0,#3a8ab8);
+  --grad-green:linear-gradient(135deg,#00e67a,#00b85a);
+  --shadow:0 8px 40px rgba(0,0,0,0.5);
+  --glow:0 0 30px rgba(168,216,240,0.12);
+  --sidebar-w:240px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:15px;height:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ═══ TOPBAR ═══ */
+#topbar{
+  height:56px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  flex-shrink:0;position:relative;z-index:100;
+}
+.tb-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--white);display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.tb-logo .dot{color:var(--ice);}
+.tb-logo-icon{width:28px;height:28px;background:var(--grad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+.tb-sep{width:1px;height:24px;background:var(--border2);margin:0 4px;}
+.tb-badge{font-family:'JetBrains Mono',monospace;font-size:.65rem;padding:3px 9px;border-radius:5px;background:rgba(168,216,240,.08);border:1px solid rgba(168,216,240,.18);color:var(--ice);letter-spacing:.1em;}
+.tb-spacer{flex:1;}
+.tb-status{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--green);font-family:'JetBrains Mono',monospace;}
+.tb-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s ease infinite;}
+.tb-notif{position:relative;cursor:pointer;}
+.tb-notif-btn{width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:.95rem;cursor:pointer;transition:all .2s;}
+.tb-notif-btn:hover{border-color:var(--border2);color:var(--ice);}
+.notif-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg2);}
+.tb-admin{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 10px;border-radius:9px;transition:background .2s;}
+.tb-admin:hover{background:var(--surface);}
+.tb-av{width:30px;height:30px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--bg);}
+.tb-admin-name{font-size:.82rem;font-weight:600;color:var(--white);}
+
+/* ═══ MAIN LAYOUT ═══ */
+#app{display:flex;flex:1;overflow:hidden;}
+
+/* ═══ SIDEBAR ═══ */
+#sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;
+  transition:width .3s;
+}
+.sidebar-section{padding:16px 12px 8px;}
+.sidebar-section-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text2);padding:0 8px;margin-bottom:6px;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:10px;
+  font-size:.85rem;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all .2s;position:relative;
+  margin-bottom:2px;user-select:none;
+}
+.nav-item:hover{background:var(--surface);color:var(--white);}
+.nav-item.active{background:rgba(168,216,240,.1);color:var(--ice);font-weight:600;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:2.5px;border-radius:2px;background:var(--ice);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:5px;min-width:18px;text-align:center;}
+.nav-badge.green{background:rgba(0,230,122,.15);color:var(--green);border:1px solid rgba(0,230,122,.2);}
+.sidebar-bot{margin-top:auto;padding:12px;border-top:1px solid var(--border);}
+.bot-status-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.bot-status-title{font-size:.78rem;font-weight:600;color:var(--white);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.bot-toggle{display:flex;align-items:center;justify-content:space-between;}
+.bot-toggle-label{font-size:.75rem;color:var(--text2);}
+.toggle-sw{width:36px;height:20px;border-radius:10px;background:var(--green);cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;}
+.toggle-sw::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .3s;}
+.toggle-sw.off{background:var(--surface3);}
+.toggle-sw.off::after{left:19px;}
+
+/* ═══ MAIN CONTENT ═══ */
+#main{flex:1;overflow-y:auto;background:var(--bg);}
+.page{display:none;padding:24px;}
+.page.active{display:block;}
+
+/* ═══ PAGE HEADER ═══ */
+.page-header{margin-bottom:24px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white);margin-bottom:4px;}
+.page-sub{font-size:.85rem;color:var(--text2);}
+
+/* ═══ STAT CARDS ═══ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:border-color .25s,transform .25s;}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.si-blue{background:rgba(168,216,240,.1);border:1px solid rgba(168,216,240,.15);}
+.si-green{background:rgba(0,230,122,.1);border:1px solid rgba(0,230,122,.15);}
+.si-amber{background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.15);}
+.si-red{background:rgba(255,68,85,.1);border:1px solid rgba(255,68,85,.15);}
+.si-purple{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.15);}
+.stat-change{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:2px 7px;border-radius:5px;}
+.up{background:rgba(0,230,122,.12);color:var(--green);}
+.down{background:rgba(255,68,85,.12);color:var(--red);}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--white);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;}
+
+/* ═══ CARDS / PANELS ═══ */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);display:flex;align-items:center;gap:8px;}
+.panel-body{padding:0;}
+
+/* ═══ TABLE ═══ */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{padding:11px 16px;text-align:left;font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border);white-space:nowrap;}
+.tbl td{padding:12px 16px;font-size:.83rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(168,216,240,.03);}
+.tbl .name-cell{color:var(--white);font-weight:500;}
+.tbl .mono{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text2);}
+.tbl .pkg-chip{display:inline-block;padding:3px 9px;border-radius:6px;font-size:.72rem;font-weight:600;background:rgba(168,216,240,.08);color:var(--ice);border:1px solid rgba(168,216,240,.15);}
+
+/* STATUS BADGES */
+.status{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:20px;}
+.status::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.s-new{background:rgba(168,216,240,.1);color:var(--ice);border:1px solid rgba(168,216,240,.2);}
+.s-new::before{background:var(--ice);}
+.s-process{background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.2);}
+.s-process::before{background:var(--amber);animation:blink 1s ease infinite;}
+.s-done{background:rgba(0,230,122,.1);color:var(--green);border:1px solid rgba(0,230,122,.2);}
+.s-done::before{background:var(--green);}
+.s-cancel{background:rgba(255,68,85,.1);color:var(--red);border:1px solid rgba(255,68,85,.2);}
+.s-cancel::before{background:var(--red);}
+.s-waiting{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2);}
+.s-waiting::before{background:var(--purple);}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.82rem;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;transition:all .2s;text-decoration:none;}
+.btn-sm{padding:6px 12px;font-size:.76rem;}
+.btn-ice{background:var(--grad);color:var(--bg);box-shadow:0 3px 14px rgba(168,216,240,.2);}
+.btn-ice:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--border2);color:var(--white);}
+.btn-green{background:var(--grad-green);color:var(--bg);}
+.btn-green:hover{filter:brightness(1.08);}
+.btn-red{background:rgba(255,68,85,.15);color:var(--red);border:1px solid rgba(255,68,85,.2);}
+.btn-red:hover{background:rgba(255,68,85,.25);}
+.btn-amber{background:rgba(255,184,0,.15);color:var(--amber);border:1px solid rgba(255,184,0,.2);}
+.btn-amber:hover{background:rgba(255,184,0,.25);}
+.btn-wa{background:var(--wa);color:#fff;box-shadow:0 3px 14px rgba(37,211,102,.25);}
+.btn-wa:hover{filter:brightness(1.08);transform:translateY(-1px);}
+
+/* ═══ SEARCH & FILTER BAR ═══ */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;flex:1;min-width:200px;transition:border-color .2s;}
+.search-box:focus-within{border-color:var(--border2);}
+.search-box input{background:transparent;border:none;outline:none;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.85rem;width:100%;}
+.search-box input::placeholder{color:var(--text2);}
+.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;cursor:pointer;transition:border-color .2s;}
+.filter-select:focus{border-color:var(--border2);}
+
+/* ═══ DASHBOARD GRID ═══ */
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;}
+.dash-left{display:flex;flex-direction:column;gap:16px;}
+
+/* CHART */
+.chart-wrap{padding:20px;position:relative;}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;}
+.chart-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.chart-bar{width:100%;background:rgba(168,216,240,.12);border-radius:6px 6px 0 0;position:relative;overflow:hidden;transition:background .2s;cursor:pointer;}
+.chart-bar::after{content:'';position:absolute;bottom:0;left:0;right:0;background:var(--grad);border-radius:6px 6px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1);}
+.chart-bar:hover{background:rgba(168,216,240,.18);}
+.chart-day{font-size:.65rem;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+.chart-legend{display:flex;gap:16px;margin-top:12px;}
+.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--text2);}
+.chart-legend-dot{width:8px;height:8px;border-radius:50%;}
+
+/* RECENT ORDERS MINI */
+.order-mini{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;}
+.order-mini:last-child{border-bottom:none;}
+.order-mini:hover{background:rgba(168,216,240,.03);}
+.om-avatar{width:36px;height:36px;border-radius:9px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--white);flex-shrink:0;}
+.om-info{flex:1;min-width:0;}
+.om-name{font-weight:600;font-size:.83rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.om-pkg{font-size:.73rem;color:var(--text2);}
+.om-price{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);white-space:nowrap;}
+
+/* QUICK STATS RIGHT */
+.quick-stat{padding:14px 16px;border-bottom:1px solid var(--border);}
+.quick-stat:last-child{border-bottom:none;}
+.qs-label{font-size:.72rem;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;}
+.qs-val{font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--white);}
+.qs-bar{height:4px;background:rgba(168,216,240,.08);border-radius:4px;margin-top:8px;overflow:hidden;}
+.qs-fill{height:100%;border-radius:4px;background:var(--grad);}
+
+/* ═══ CHATBOT PAGE ═══ */
+.chatbot-layout{display:grid;grid-template-columns:300px 1fr 300px;gap:0;height:calc(100vh - 56px - 48px);border-radius:16px;overflow:hidden;border:1px solid var(--border);}
+.chat-sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.chat-sidebar-head{padding:14px 16px;border-bottom:1px solid var(--border);}
+.chat-sidebar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:10px;}
+.chat-search{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:7px 12px;}
+.chat-search input{background:transparent;border:none;outline:none;color:var(--white);font-size:.82rem;font-family:'DM Sans',sans-serif;width:100%;}
+.chat-search input::placeholder{color:var(--text2);}
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);position:relative;}
+.conv-item:hover{background:rgba(168,216,240,.04);}
+.conv-item.active{background:rgba(168,216,240,.08);}
+.conv-item.active::before{content:'';position:absolute;left:0;top:10%;bottom:10%;width:3px;background:var(--ice);border-radius:2px;}
+.conv-av{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--white);flex-shrink:0;position:relative;}
+.conv-online{position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--surface);}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-weight:600;font-size:.83rem;color:var(--white);display:flex;align-items:center;justify-content:space-between;}
+.conv-time{font-size:.68rem;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+.conv-msg{font-size:.75rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.conv-unread{background:var(--ice);color:var(--bg);font-size:.62rem;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* CHAT WINDOW */
+.chat-window{background:var(--bg);display:flex;flex-direction:column;}
+.chat-win-head{padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:12px;}
+.chat-win-av{width:36px;height:36px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg);font-size:.9rem;flex-shrink:0;}
+.chat-win-info .cw-name{font-weight:600;font-size:.88rem;color:var(--white);}
+.chat-win-info .cw-status{font-size:.72rem;color:var(--green);}
+.chat-win-actions{margin-left:auto;display:flex;gap:8px;}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:75%;display:flex;flex-direction:column;gap:3px;}
+.msg.bot{align-self:flex-start;}
+.msg.user{align-self:flex-end;}
+.msg-bubble{padding:10px 14px;border-radius:14px;font-size:.83rem;line-height:1.55;}
+.msg.bot .msg-bubble{background:var(--surface2);color:var(--text);border-radius:4px 14px 14px 14px;}
+.msg.user .msg-bubble{background:rgba(37,211,102,.15);color:var(--white);border:1px solid rgba(37,211,102,.2);border-radius:14px 14px 4px 14px;}
+.msg-time{font-size:.65rem;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+.msg.bot .msg-time{padding-left:4px;}
+.msg.user .msg-time{padding-right:4px;text-align:right;}
+.msg-typing{display:flex;gap:4px;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:4px 14px 14px 14px;width:fit-content;}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text2);animation:typing .9s ease infinite;}
+.typing-dot:nth-child(2){animation-delay:.15s;}
+.typing-dot:nth-child(3){animation-delay:.3s;}
+@keyframes typing{0%,80%,100%{transform:scale(0.8);opacity:.4}40%{transform:scale(1.1);opacity:1}}
+.chat-input-bar{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;resize:none;height:40px;}
+.chat-input:focus{border-color:var(--border2);}
+.chat-send{width:38px;height:38px;border-radius:9px;background:var(--grad);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:1rem;transition:all .2s;flex-shrink:0;}
+.chat-send:hover{filter:brightness(1.08);}
+
+/* CHAT INFO PANEL */
+.chat-info{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.ci-head{padding:16px;border-bottom:1px solid var(--border);text-align:center;}
+.ci-avatar{width:56px;height:56px;border-radius:14px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:var(--bg);margin:0 auto 10px;}
+.ci-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:2px;}
+.ci-wa{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--text2);}
+.ci-section{padding:14px 16px;border-bottom:1px solid var(--border);}
+.ci-sec-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text2);margin-bottom:10px;font-weight:600;}
+.ci-kv{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.ci-k{font-size:.78rem;color:var(--text2);}
+.ci-v{font-size:.78rem;color:var(--white);font-weight:500;text-align:right;}
+.ci-actions{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+
+/* ═══ ORDERS PAGE ═══ */
+.order-detail-panel{position:fixed;right:0;top:56px;bottom:0;width:380px;background:var(--surface);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto;}
+.order-detail-panel.open{transform:translateX(0);}
+.odp-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.odp-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);}
+.odp-close{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:.9rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.odp-close:hover{color:var(--white);}
+.odp-body{padding:20px;flex:1;}
+.odp-section{margin-bottom:20px;}
+.odp-sec-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text2);margin-bottom:10px;font-weight:600;}
+.odp-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.odp-info-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.odp-ib-label{font-size:.68rem;color:var(--text2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em;}
+.odp-ib-val{font-size:.85rem;font-weight:600;color:var(--white);}
+.timeline-mini{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{content:'';position:absolute;left:10px;top:24px;bottom:0;width:1px;background:var(--border);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:22px;height:22px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;position:relative;z-index:1;}
+.tl-dot.done{background:rgba(0,230,122,.15);border-color:var(--green);}
+.tl-dot.active{background:rgba(168,216,240,.15);border-color:var(--ice);}
+.tl-content{}
+.tl-event{font-size:.82rem;font-weight:500;color:var(--white);}
+.tl-time{font-size:.7rem;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+
+/* ═══ CUSTOMERS ═══ */
+.customer-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;transition:all .2s;cursor:pointer;}
+.customer-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.cust-av{width:44px;height:44px;border-radius:11px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:var(--white);flex-shrink:0;}
+.cust-info{flex:1;min-width:0;}
+.cust-name{font-weight:600;font-size:.88rem;color:var(--white);}
+.cust-wa{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text2);}
+.cust-stats{display:flex;gap:16px;margin-top:4px;}
+.cs-item{font-size:.72rem;color:var(--text2);}
+.cs-item strong{color:var(--ice);}
+.cust-badge{font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:6px;}
+.cb-vip{background:rgba(255,184,0,.12);color:var(--amber);border:1px solid rgba(255,184,0,.2);}
+.cb-regular{background:rgba(168,216,240,.08);color:var(--ice);border:1px solid rgba(168,216,240,.15);}
+.cb-new{background:rgba(0,230,122,.1);color:var(--green);border:1px solid rgba(0,230,122,.2);}
+.customers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+
+/* ═══ CHATBOT SETTINGS ═══ */
+.bot-flow{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.flow-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.flow-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.flow-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--white);display:flex;align-items:center;gap:8px;}
+.flow-items{padding:8px;}
+.flow-item{padding:10px 12px;border-radius:9px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s;margin-bottom:2px;}
+.flow-item:hover{background:var(--surface2);}
+.flow-trigger{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(168,216,240,.08);color:var(--ice);padding:3px 8px;border-radius:5px;border:1px solid rgba(168,216,240,.15);white-space:nowrap;}
+.flow-arrow{color:var(--text2);font-size:.75rem;flex-shrink:0;}
+.flow-response{font-size:.78rem;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.flow-edit{font-size:.75rem;color:var(--text2);padding:3px 8px;border-radius:5px;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:transparent;font-family:'DM Sans',sans-serif;}
+.flow-edit:hover{border-color:var(--ice);color:var(--ice);}
+.keyword-tags{display:flex;flex-wrap:wrap;gap:6px;padding:14px 16px;}
+.kw-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(168,216,240,.07);border:1px solid rgba(168,216,240,.15);color:var(--ice);font-size:.73rem;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;}
+.kw-remove{cursor:pointer;color:var(--text2);transition:color .15s;font-size:.8rem;}
+.kw-remove:hover{color:var(--red);}
+.kw-input-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.kw-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--white);font-family:'JetBrains Mono',monospace;font-size:.78rem;outline:none;}
+.kw-input:focus{border-color:var(--border2);}
+.kw-add{background:var(--grad);border:none;border-radius:7px;padding:7px 14px;color:var(--bg);font-weight:600;font-size:.78rem;cursor:pointer;}
+
+/* ═══ NOTIFICATION DROPDOWN ═══ */
+.notif-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);z-index:500;overflow:hidden;display:none;}
+.notif-dropdown.open{display:block;}
+.nd-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.nd-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--white);}
+.nd-clear{font-size:.73rem;color:var(--ice);cursor:pointer;}
+.nd-item{padding:12px 16px;display:flex;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.nd-item:hover{background:rgba(168,216,240,.04);}
+.nd-item:last-child{border-bottom:none;}
+.nd-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.nd-text .nd-t{font-size:.8rem;font-weight:500;color:var(--white);}
+.nd-text .nd-s{font-size:.73rem;color:var(--text2);}
+.nd-dot{width:7px;height:7px;border-radius:50%;background:var(--ice);flex-shrink:0;align-self:center;}
+
+/* TOAST */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);min-width:260px;animation:toastIn .35s cubic-bezier(.4,0,.2,1);}
+.toast.hide{animation:toastOut .3s ease forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px)}}
+.t-icon{font-size:1.1rem;}
+.t-title{font-size:.82rem;font-weight:600;color:var(--white);}
+.t-msg{font-size:.75rem;color:var(--text2);}
+
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;background:rgba(8,14,26,.8);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+#modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:90%;max-width:420px;transform:scale(.95);transition:transform .3s;position:relative;}
+#modal-overlay.open .modal{transform:scale(1);}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);border-radius:18px 18px 0 0;}
+.modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;}
+.modal-close:hover{color:var(--white);}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--white);margin-bottom:6px;}
+.modal-sub{font-size:.83rem;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:.78rem;font-weight:500;color:var(--text);margin-bottom:6px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--border2);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text2);}
+.form-select option{background:var(--bg);}
+.form-textarea{resize:none;height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.modal-actions .btn{flex:1;justify-content:center;}
+
+/* MINI CHART SPARKLINE */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:28px;}
+.sparkline-bar{flex:1;border-radius:2px;background:rgba(168,216,240,.2);transition:background .2s;}
+.sparkline-bar.active{background:var(--ice);}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border2);}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  #sidebar{width:60px;}
+  .nav-item span:not(.nav-icon){display:none;}
+  .nav-badge{display:none;}
+  .sidebar-section-label{display:none;}
+  .bot-status-card{display:none;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .dash-grid{grid-template-columns:1fr;}
+  .chatbot-layout{grid-template-columns:1fr;}
+  .chat-sidebar,.chat-info{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-logo">
+    <div class="tb-logo-icon">❄️</div>
+    Polar<span class="dot">Store</span>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-badge">ADMIN PANEL v2.0</div>
+  <div class="tb-spacer"></div>
+  <div class="tb-status">BOT AKTIF</div>
+  <div class="tb-sep"></div>
+  <div class="tb-notif" id="notifBtn">
+    <div class="tb-notif-btn" onclick="toggleNotif()">🔔</div>
+    <div class="notif-badge" id="notifBadge">4</div>
+    <div class="notif-dropdown" id="notifDropdown">
+      <div class="nd-head">
+        <div class="nd-title">Notifikasi</div>
+        <div class="nd-clear" onclick="clearNotifs()">Tandai semua dibaca</div>
+      </div>
+      <div class="nd-item">
+        <div class="nd-icon si-green">💰</div>
+        <div class="nd-text"><div class="nd-t">Order baru masuk — Rizky K.</div><div class="nd-s">Paket Pro Racer · 2 menit lalu</div></div>
+        <div class="nd-dot"></div>
+      </div>
+      <div class="nd-item">
+        <div class="nd-icon si-amber">💬</div>
+        <div class="nd-text"><div class="nd-t">Pesan baru dari Aldi S.</div><div class="nd-s">"Kapan selesai kak?" · 8 menit lalu</div></div>
+        <div class="nd-dot"></div>
+      </div>
+      <div class="nd-item">
+        <div class="nd-icon si-blue">✅</div>
+        <div class="nd-text"><div class="nd-t">Order #PS-0089 selesai</div><div class="nd-s">Fira P. — Legend · 15 menit lalu</div></div>
+        <div class="nd-dot"></div>
+      </div>
+      <div class="nd-item">
+        <div class="nd-icon si-red">⚠️</div>
+        <div class="nd-text"><div class="nd-t">Pembayaran belum dikonfirmasi</div><div class="nd-s">Order #PS-0091 · 30 menit lalu</div></div>
+        <div class="nd-dot"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tb-admin">
+    <div class="tb-av">PS</div>
+    <span class="tb-admin-name">Admin Polar</span>
+  </div>
+</div>
+
+<!-- APP BODY -->
+<div id="app">
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">📊</span><span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="showPage('orders',this)">
+      <span class="nav-icon">📦</span><span>Order</span>
+      <span class="nav-badge" id="badge-orders">7</span>
+    </div>
+    <div class="nav-item" onclick="showPage('chatbot',this)">
+      <span class="nav-icon">💬</span><span>Chatbot WA</span>
+      <span class="nav-badge" id="badge-chat">3</span>
+    </div>
+    <div class="nav-item" onclick="showPage('customers',this)">
+      <span class="nav-icon">👥</span><span>Pelanggan</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Pengaturan</div>
+    <div class="nav-item" onclick="showPage('bot-settings',this)">
+      <span class="nav-icon">🤖</span><span>Alur Chatbot</span>
+    </div>
+    <div class="nav-item" onclick="showPage('analytics',this)">
+      <span class="nav-icon">📈</span><span>Analitik</span>
+    </div>
+    <div class="nav-item" onclick="showPage('settings',this)">
+      <span class="nav-icon">⚙️</span><span>Pengaturan</span>
+    </div>
+  </div>
+  <div class="sidebar-bot">
+    <div class="bot-status-card">
+      <div class="bot-status-title">🤖 Status Bot</div>
+      <div class="bot-toggle">
+        <span class="bot-toggle-label" id="botLabel">Aktif</span>
+        <div class="toggle-sw" id="botToggle" onclick="toggleBot()"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+<!-- ══════════════════ DASHBOARD ══════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Selamat datang kembali, Admin Polar 👋 — Hari ini ada 7 order baru</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon si-green">💰</div>
+        <span class="stat-change up">+18%</span>
+      </div>
+      <div class="stat-val" id="stat-revenue">Rp 0</div>
+      <div class="stat-label">Pendapatan Bulan Ini</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon si-blue">📦</div>
+        <span class="stat-change up">+12%</span>
+      </div>
+      <div class="stat-val" id="stat-orders">0</div>
+      <div class="stat-label">Total Order</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon si-amber">👥</div>
+        <span class="stat-change up">+8%</span>
+      </div>
+      <div class="stat-val" id="stat-customers">0</div>
+      <div class="stat-label">Total Pelanggan</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon si-purple">🤖</div>
+        <span class="stat-change up">94%</span>
+      </div>
+      <div class="stat-val" id="stat-bot">0</div>
+      <div class="stat-label">Pesan Bot Hari Ini</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="dash-left">
+      <!-- CHART -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">📈 Pendapatan 7 Hari</div>
+          <div style="display:flex;gap:8px;">
+            <select class="filter-select" style="padding:5px 10px;font-size:.75rem;" onchange="updateChart(this.value)">
+              <option>7 Hari</option><option>30 Hari</option><option>3 Bulan</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-bars" id="chartBars"></div>
+          <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--ice)"></div>Pendapatan</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--green)"></div>Order</div>
+          </div>
+        </div>
+      </div>
+      <!-- RECENT ORDERS -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">📋 Order Terbaru</div>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('orders',document.querySelector('[onclick*=orders]'))">Lihat Semua</button>
+        </div>
+        <div id="recentOrdersList"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div>
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head"><div class="panel-title">🎯 Ringkasan</div></div>
+        <div class="quick-stat">
+          <div class="qs-label">Order Aktif</div>
+          <div class="qs-val">12 order</div>
+          <div class="qs-bar"><div class="qs-fill" style="width:60%"></div></div>
+        </div>
+        <div class="quick-stat">
+          <div class="qs-label">Menunggu Konfirmasi</div>
+          <div class="qs-val">3 order</div>
+          <div class="qs-bar"><div class="qs-fill" style="width:25%;background:var(--amber)"></div></div>
+        </div>
+        <div class="quick-stat">
+          <div class="qs-label">Respons Bot Hari Ini</div>
+          <div class="qs-val">47 pesan</div>
+          <div class="qs-bar"><div class="qs-fill" style="width:80%;background:var(--green)"></div></div>
+        </div>
+        <div class="quick-stat">
+          <div class="qs-label">Kepuasan Pelanggan</div>
+          <div class="qs-val">4.9 / 5.0 ⭐</div>
+          <div class="qs-bar"><div class="qs-fill" style="width:98%"></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">💬 Pesan Terbaru</div></div>
+        <div style="padding:0;" id="recentMsgList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ORDERS ══════════════════ -->
+<div class="page" id="page-orders">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="page-title">Manajemen Order</div>
+        <div class="page-sub">Total <span id="orderCount">0</span> order terdaftar</div>
+      </div>
+      <button class="btn btn-ice" onclick="openAddOrder()">+ Tambah Order</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Cari nama, username, atau ID order..." oninput="filterOrders(this.value)" id="orderSearch">
+    </div>
+    <select class="filter-select" onchange="filterOrderStatus(this.value)" id="statusFilter">
+      <option value="">Semua Status</option>
+      <option value="Baru">Baru</option>
+      <option value="Diproses">Diproses</option>
+      <option value="Selesai">Selesai</option>
+      <option value="Menunggu">Menunggu Bayar</option>
+      <option value="Batal">Dibatalkan</option>
+    </select>
+    <select class="filter-select" onchange="filterOrderPkg(this.value)">
+      <option value="">Semua Paket</option>
+      <option>Starter</option>
+      <option>Pro Racer</option>
+      <option>Legend</option>
+      <option>Daily Quest</option>
+      <option>Event Boost</option>
+      <option>Custom</option>
+    </select>
+  </div>
+
+  <div class="panel">
+    <div class="panel-body">
+      <table class="tbl" id="ordersTable">
+        <thead>
+          <tr>
+            <th>ID Order</th>
+            <th>Pelanggan</th>
+            <th>Paket</th>
+            <th>Harga</th>
+            <th>Status</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL PANEL -->
+<div class="order-detail-panel" id="orderDetailPanel">
+  <div class="odp-head">
+    <div class="odp-title">Detail Order</div>
+    <div class="odp-close" onclick="closeOrderDetail()">✕</div>
+  </div>
+  <div class="odp-body" id="odpBody"></div>
+</div>
+
+<!-- ══════════════════ CHATBOT ══════════════════ -->
+<div class="page" id="page-chatbot" style="padding:0;height:calc(100vh - 56px);overflow:hidden;">
+  <div class="chatbot-layout">
+    <!-- CONVERSATION LIST -->
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-head">
+        <div class="chat-sidebar-title">💬 Percakapan</div>
+        <div class="chat-search">
+          <span>🔍</span>
+          <input type="text" placeholder="Cari pelanggan...">
+        </div>
+      </div>
+      <div class="conv-list" id="convList"></div>
+    </div>
+
+    <!-- CHAT WINDOW -->
+    <div class="chat-window">
+      <div class="chat-win-head" id="chatWinHead">
+        <div class="chat-win-av" id="chatWinAv">R</div>
+        <div class="chat-win-info">
+          <div class="cw-name" id="chatWinName">Rizky Kurniawan</div>
+          <div class="cw-status" id="chatWinStatus">● Online</div>
+        </div>
+        <div class="chat-win-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openWhatsApp()">📱 Buka WA</button>
+          <button class="btn btn-ice btn-sm" onclick="openUpdateStatus()">Update Status</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-bar">
+        <input class="chat-input" id="chatInput" placeholder="Ketik pesan balasan admin..." onkeydown="if(event.key==='Enter')sendAdminMsg()">
+        <button class="chat-send" onclick="sendAdminMsg()">➤</button>
+      </div>
+    </div>
+
+    <!-- CUSTOMER INFO -->
+    <div class="chat-info" id="chatInfoPanel">
+      <div class="ci-head">
+        <div class="ci-avatar" id="ciAv">RK</div>
+        <div class="ci-name" id="ciName">Rizky Kurniawan</div>
+        <div class="ci-wa" id="ciWa">+62 812-0000-0001</div>
+      </div>
+      <div class="ci-section">
+        <div class="ci-sec-title">Info Akun</div>
+        <div class="ci-kv"><span class="ci-k">Roblox User</span><span class="ci-v" id="ci-roblox">GamerRizky_ID</span></div>
+        <div class="ci-kv"><span class="ci-k">Level Saat Ini</span><span class="ci-v" id="ci-level">Level 45</span></div>
+        <div class="ci-kv"><span class="ci-k">Total Order</span><span class="ci-v" id="ci-total-order">3 order</span></div>
+        <div class="ci-kv"><span class="ci-k">Total Bayar</span><span class="ci-v" id="ci-total-pay">Rp 307.000</span></div>
+      </div>
+      <div class="ci-section">
+        <div class="ci-sec-title">Order Aktif</div>
+        <div class="ci-kv"><span class="ci-k">Paket</span><span class="ci-v" id="ci-pkg" style="color:var(--ice)">Pro Racer</span></div>
+        <div class="ci-kv"><span class="ci-k">Status</span><span class="ci-v" id="ci-status" style="color:var(--amber)">Diproses</span></div>
+        <div class="ci-kv"><span class="ci-k">Progress</span><span class="ci-v" id="ci-progress">72%</span></div>
+      </div>
+      <div class="ci-actions">
+        <button class="btn btn-wa btn-sm" style="justify-content:center;" onclick="openWhatsApp()">
+          💬 Chat di WhatsApp
+        </button>
+        <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="openUpdateStatus()">
+          📊 Update Progress
+        </button>
+        <button class="btn btn-amber btn-sm" style="justify-content:center;">
+          🧾 Lihat Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CUSTOMERS ══════════════════ -->
+<div class="page" id="page-customers">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="page-title">Manajemen Pelanggan</div>
+        <div class="page-sub"><span id="custCount">0</span> pelanggan terdaftar</div>
+      </div>
+      <button class="btn btn-ice" onclick="openAddCustomer()">+ Tambah Pelanggan</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Cari nama atau WhatsApp..." oninput="filterCustomers(this.value)">
+    </div>
+    <select class="filter-select">
+      <option>Semua Tipe</option>
+      <option>VIP</option>
+      <option>Regular</option>
+      <option>Baru</option>
+    </select>
+  </div>
+  <div class="customers-grid" id="customersGrid"></div>
+</div>
+
+<!-- ══════════════════ BOT SETTINGS ══════════════════ -->
+<div class="page" id="page-bot-settings">
+  <div class="page-header">
+    <div class="page-title">🤖 Alur & Respon Chatbot</div>
+    <div class="page-sub">Atur kata kunci trigger dan balasan otomatis bot WhatsApp Polar Store</div>
+  </div>
+
+  <div class="bot-flow">
+    <!-- AUTO REPLIES -->
+    <div class="flow-card">
+      <div class="flow-head">
+        <div class="flow-title">⚡ Balasan Otomatis</div>
+        <button class="btn btn-ice btn-sm" onclick="openAddReply()">+ Tambah</button>
+      </div>
+      <div class="flow-items" id="flowItems"></div>
+    </div>
+
+    <!-- KEYWORDS -->
+    <div class="flow-card">
+      <div class="flow-head">
+        <div class="flow-title">🏷️ Kata Kunci Trigger</div>
+      </div>
+      <div class="keyword-tags" id="keywordTags"></div>
+      <div class="kw-input-row">
+        <input class="kw-input" id="kwInput" placeholder="Tambah kata kunci..." onkeydown="if(event.key==='Enter')addKeyword()">
+        <button class="kw-add" onclick="addKeyword()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- GREETING -->
+    <div class="flow-card" style="grid-column:span 2;">
+      <div class="flow-head">
+        <div class="flow-title">👋 Pesan Sambutan Bot</div>
+        <button class="btn btn-ghost btn-sm" onclick="saveGreeting()">Simpan</button>
+      </div>
+      <div style="padding:16px;">
+        <textarea class="form-textarea" id="greetingText" style="height:120px;width:100%;">Halo! 👋 Selamat datang di *Polar Store* ❄️
+
+Kami melayani joki CDID Roblox profesional:
+🏆 Joki Level & Rank
+💰 Farming Koin
+🚙 Unlock Kendaraan
+📋 Daily Quest
+🏅 Event & Turnamen
+
+Ketik menu di bawah:
+[1] Lihat Paket & Harga
+[2] Order Sekarang
+[3] Cek Status Order
+[4] Hubungi Admin
+[0] Kembali ke Menu</textarea>
+      </div>
+    </div>
+
+    <!-- BOT STATS -->
+    <div class="flow-card">
+      <div class="flow-head"><div class="flow-title">📊 Statistik Bot Hari Ini</div></div>
+      <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--white);" id="botMsgCount">47</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:3px;">Pesan Dibalas</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--green);">94%</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:3px;">Auto-Resolve</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--amber);">8</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:3px;">Eskalasi ke Admin</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--ice);">~12s</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:3px;">Rata-Rata Respons</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK REPLIES -->
+    <div class="flow-card">
+      <div class="flow-head"><div class="flow-title">💡 Quick Reply Template</div></div>
+      <div style="padding:10px;display:flex;flex-direction:column;gap:6px;" id="quickReplyList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ANALYTICS ══════════════════ -->
+<div class="page" id="page-analytics">
+  <div class="page-header">
+    <div class="page-title">📈 Analitik</div>
+    <div class="page-sub">Ringkasan performa Polar Store</div>
+  </div>
+  <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="stat-card"><div class="stat-top"><div class="stat-icon si-green">📦</div><span class="stat-change up">+22%</span></div><div class="stat-val">342</div><div class="stat-label">Order Bulan Ini</div></div>
+    <div class="stat-card"><div class="stat-top"><div class="stat-icon si-blue">💰</div><span class="stat-change up">+18%</span></div><div class="stat-val">Rp 42.1jt</div><div class="stat-label">Revenue Bulan Ini</div></div>
+    <div class="stat-card"><div class="stat-top"><div class="stat-icon si-amber">⭐</div><span class="stat-change up">+0.1</span></div><div class="stat-val">4.92</div><div class="stat-label">Rating Rata-Rata</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🏆 Paket Terlaris</div></div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;" id="pkgChart"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">📅 Order per Hari (7 Hari)</div></div>
+      <div style="padding:20px;" id="weekChart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SETTINGS ══════════════════ -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div class="page-title">⚙️ Pengaturan</div>
+    <div class="page-sub">Konfigurasi Polar Store Admin Dashboard</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">👤 Profil Admin</div></div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <div class="form-group"><label class="form-label">Nama Admin</label><input class="form-input" value="Admin Polar Store"></div>
+        <div class="form-group"><label class="form-label">Nomor WhatsApp</label><input class="form-input" value="+6282245224101" id="settingsWA"></div>
+        <div class="form-group"><label class="form-label">Password Baru</label><input class="form-input" type="password" placeholder="Kosongkan jika tidak diubah"></div>
+        <button class="btn btn-ice" onclick="saveSettings()">Simpan Perubahan</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🤖 Konfigurasi Bot</div></div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <div class="form-group"><label class="form-label">Status Bot</label>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+            <div class="toggle-sw" id="botToggle2" onclick="toggleBot()"></div>
+            <span id="botLabel2" style="font-size:.85rem;color:var(--green);">Aktif</span>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Delay Respon (detik)</label><input class="form-input" type="number" value="2" min="1" max="30"></div>
+        <div class="form-group"><label class="form-label">Bahasa Bot</label>
+          <select class="form-select"><option>Bahasa Indonesia</option><option>English</option><option>Campuran (ID+EN)</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Mode Eskalasi Admin</label>
+          <select class="form-select"><option>Otomatis (jika bot tidak tahu)</option><option>Manual saja</option></select>
+        </div>
+        <button class="btn btn-ice" onclick="saveSettings()">Simpan Konfigurasi</button>
+      </div>
+    </div>
+    <div class="panel" style="grid-column:span 2;">
+      <div class="panel-head"><div class="panel-title">💳 Nomor Rekening & Pembayaran</div></div>
+      <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">GoPay / OVO / Dana</label><input class="form-input" value="082245224101"></div>
+        <div class="form-group"><label class="form-label">Rekening BCA</label><input class="form-input" placeholder="No. Rekening BCA"></div>
+        <div class="form-group"><label class="form-label">Rekening BRI</label><input class="form-input" placeholder="No. Rekening BRI"></div>
+        <div style="grid-column:span 3;"><button class="btn btn-ice" onclick="saveSettings()">Simpan Pembayaran</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalBox">
+  <button class="modal-close" onclick="closeModal()">✕</button>
+  <div id="modalContent"></div>
+</div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA STORE
+═══════════════════════════════════════════════════════════ */
+const DB = {
+  orders: [
+    {id:'PS-0092',name:'Rizky Kurniawan',roblox:'GamerRizky_ID',wa:'08120000001',pkg:'Pro Racer',price:129000,status:'Diproses',date:'2025-01-12',level:'45',progress:72,note:'Minta update tiap hari'},
+    {id:'PS-0091',name:'Aldi Saputra',roblox:'AldiS_CDID',wa:'08130000002',pkg:'Legend',price:299000,status:'Menunggu',date:'2025-01-12',level:'20',progress:0,note:''},
+    {id:'PS-0090',name:'Fira Putri',roblox:'FiraGamez',wa:'08140000003',pkg:'Starter',price:49000,status:'Selesai',date:'2025-01-11',level:'10',progress:100,note:''},
+    {id:'PS-0089',name:'Dimas Haryanto',roblox:'Dimas_Racing',wa:'08150000004',pkg:'Daily Quest',price:10000,status:'Selesai',date:'2025-01-11',level:'67',progress:100,note:''},
+    {id:'PS-0088',name:'Bagas Nugroho',roblox:'BagasSpeed',wa:'08160000005',pkg:'Event Boost',price:35000,status:'Diproses',date:'2025-01-10',level:'52',progress:45,note:'Event hari Jumat'},
+    {id:'PS-0087',name:'Siti Rahayu',roblox:'SitiR_Game',wa:'08170000006',pkg:'Pro Racer',price:129000,status:'Baru',date:'2025-01-10',level:'33',progress:0,note:''},
+    {id:'PS-0086',name:'Reza Mahendra',roblox:'RezaM99',wa:'08180000007',pkg:'Farming Koin',price:20000,status:'Selesai',date:'2025-01-09',level:'78',progress:100,note:'5M koin'},
+    {id:'PS-0085',name:'Anisa Wijaya',roblox:'AnisaW_Play',wa:'08190000008',pkg:'Monthly Pass',price:450000,status:'Diproses',date:'2025-01-09',level:'1',progress:30,note:'Akun baru banget'},
+    {id:'PS-0084',name:'Budi Santoso',roblox:'BudiS_CDID',wa:'08210000009',pkg:'Starter',price:49000,status:'Batal',date:'2025-01-08',level:'5',progress:0,note:'Refund diminta'},
+    {id:'PS-0083',name:'Citra Lestari',roblox:'CitraL99',wa:'08220000010',pkg:'Legend',price:299000,status:'Selesai',date:'2025-01-08',level:'55',progress:100,note:''},
+  ],
+  customers: [
+    {id:'C001',name:'Rizky Kurniawan',wa:'08120000001',roblox:'GamerRizky_ID',city:'Jakarta',orders:3,totalSpend:307000,type:'VIP',joined:'2024-10-05'},
+    {id:'C002',name:'Aldi Saputra',wa:'08130000002',roblox:'AldiS_CDID',city:'Surabaya',orders:4,totalSpend:557000,type:'VIP',joined:'2024-09-12'},
+    {id:'C003',name:'Fira Putri',wa:'08140000003',roblox:'FiraGamez',city:'Bandung',orders:1,totalSpend:49000,type:'Baru',joined:'2025-01-11'},
+    {id:'C004',name:'Dimas Haryanto',wa:'08150000004',roblox:'Dimas_Racing',city:'Medan',orders:2,totalSpend:20000,type:'Regular',joined:'2024-11-20'},
+    {id:'C005',name:'Bagas Nugroho',wa:'08160000005',roblox:'BagasSpeed',city:'Yogyakarta',orders:2,totalSpend:164000,type:'Regular',joined:'2024-12-01'},
+    {id:'C006',name:'Siti Rahayu',wa:'08170000006',roblox:'SitiR_Game',city:'Semarang',orders:1,totalSpend:129000,type:'Regular',joined:'2025-01-10'},
+    {id:'C007',name:'Reza Mahendra',wa:'08180000007',roblox:'RezaM99',city:'Malang',orders:3,totalSpend:60000,type:'Regular',joined:'2024-12-15'},
+    {id:'C008',name:'Anisa Wijaya',wa:'08190000008',roblox:'AnisaW_Play',city:'Bekasi',orders:1,totalSpend:450000,type:'VIP',joined:'2025-01-09'},
+  ],
+  conversations: [
+    {id:1,name:'Rizky Kurniawan',wa:'08120000001',lastMsg:'Kak udah sampe level berapa?',time:'2m',unread:2,online:true,avatar:'RK',
+     messages:[
+      {role:'user',text:'Halo kak, saya mau order joki level nih',time:'10:30'},
+      {role:'bot',text:'Halo! 👋 Selamat datang di *Polar Store* ❄️\n\nKami melayani joki CDID Roblox profesional. Paket apa yang kamu inginkan?\n\n[1] Lihat Paket & Harga\n[2] Order Sekarang\n[3] Cek Status Order',time:'10:30'},
+      {role:'user',text:'2',time:'10:31'},
+      {role:'bot',text:'Siap! Untuk order, mohon kirimkan:\n\n📝 Username Roblox\n📊 Level saat ini\n📦 Paket yang diinginkan\n📱 Nomor WA aktif\n\nAtau isi form di website kami ✨',time:'10:31'},
+      {role:'user',text:'GamerRizky_ID, level 45, Pro Racer, 08120000001',time:'10:33'},
+      {role:'bot',text:'✅ Order kamu sudah kami terima!\n\n📋 ID Order: #PS-0092\n📦 Paket: Pro Racer\n💰 Harga: Rp 129.000\n\nSilakan transfer ke:\n💚 GoPay/OVO/Dana: 082245224101\n\nKirim bukti transfer ke sini ya! 🙏',time:'10:33'},
+      {role:'user',text:'Sudah transfer kak!',time:'10:45'},
+      {role:'admin',text:'✅ Pembayaran dikonfirmasi! Joki langsung mulai dikerjakan ya. Estimasi selesai 3-5 hari 🚀',time:'10:46'},
+      {role:'user',text:'Kak udah sampe level berapa?',time:'11:20'},
+     ]},
+    {id:2,name:'Aldi Saputra',wa:'08130000002',lastMsg:'Mau order Legend kak',time:'15m',unread:1,online:false,avatar:'AS',
+     messages:[
+      {role:'user',text:'Halo min, mau tanya paket Legend',time:'09:15'},
+      {role:'bot',text:'Halo! Paket *Legend* Polar Store ❄️\n\n💎 Harga: Rp 299.000\n✅ MAX Level Boost\n✅ 10M Koin Farming\n✅ 30x Daily Quest\n✅ Semua Kendaraan\n✅ 3 Event Spesial\n✅ Priority Support\n\nMinat? Ketik ORDER untuk lanjut 🔥',time:'09:15'},
+      {role:'user',text:'Mau order Legend kak',time:'09:20'},
+     ]},
+    {id:3,name:'Fira Putri',wa:'08140000003',lastMsg:'Makasih kak udah selesai 🙏',time:'1j',unread:0,online:false,avatar:'FP',
+     messages:[
+      {role:'user',text:'Kak order saya sudah selesai belum?',time:'08:00'},
+      {role:'bot',text:'Halo! Untuk cek status order, kirimkan ID Order kamu (contoh: PS-0090) 📋',time:'08:00'},
+      {role:'user',text:'PS-0090',time:'08:01'},
+      {role:'bot',text:'✅ *Order #PS-0090 SELESAI!*\n\n📦 Paket: Starter\n👤 Akun: FiraGamez\n📊 Progress: Level 10 → Level 15 ✅\n💰 Koin +500K ✅\n\nAkun sudah dikembalikan, silakan ganti password! 🔐',time:'08:01'},
+      {role:'user',text:'Makasih kak udah selesai 🙏',time:'08:05'},
+     ]},
+    {id:4,name:'Bagas Nugroho',wa:'08160000005',lastMsg:'Event kapan mulai kak?',time:'2j',unread:0,online:true,avatar:'BN',
+     messages:[
+      {role:'user',text:'Min, event boost ada ga?',time:'07:00'},
+      {role:'bot',text:'Ada dong! 🏅 Layanan Event & Turnamen CDID\n\n💰 Harga: Rp 35.000/event\n⏱ Pengerjaan sesuai jadwal\n🎁 Reward eksklusif dijamin\n\nEvent apa yang ingin kamu ikuti?',time:'07:00'},
+      {role:'user',text:'Event kapan mulai kak?',time:'07:05'},
+     ]},
+  ],
+  botReplies: [
+    {trigger:'harga|berapa|paket',response:'Cek paket lengkap di website kami atau ketik [1]',enabled:true},
+    {trigger:'order|pesan|beli',response:'Untuk order silakan kirim data akun kamu 📋',enabled:true},
+    {trigger:'status|cek|progress',response:'Kirimkan ID Order kamu (format: PS-XXXX)',enabled:true},
+    {trigger:'bayar|transfer|payment',response:'Pembayaran via GoPay/OVO/Dana/QRIS/Bank 💳',enabled:true},
+    {trigger:'aman|ban|risiko',response:'100% aman! Kami bermain manual, no cheat ✅',enabled:true},
+    {trigger:'berapa lama|estimasi|kapan',response:'Estimasi pengerjaan 1-14 hari tergantung paket 📅',enabled:true},
+    {trigger:'admin|manusia|cs',response:'Menghubungkan ke admin... 📞 Mohon tunggu!',enabled:true},
+    {trigger:'hi|halo|hello|hai',response:'Halo! Selamat datang di Polar Store ❄️',enabled:true},
+  ],
+  keywords: ['harga','order','paket','joki','level','koin','kendaraan','event','daily','quest','aman','transfer','bayar','status','progress'],
+  quickReplies: [
+    '✅ Pembayaran dikonfirmasi! Joki segera dimulai.',
+    '📊 Update progress: sudah mencapai X%. Estimasi selesai Y hari lagi.',
+    '🎉 Order kamu SELESAI! Silakan cek akun dan ganti password.',
+    '⚠️ Pembayaran belum diterima. Silakan kirim bukti transfer.',
+    '🙏 Terima kasih sudah order di Polar Store! Ada yang bisa dibantu?',
+  ]
+};
+
+let activeConv = 0;
+let botActive = true;
+let notifCount = 4;
+let currentOrderFilter = '';
+let selectedOrderId = null;
+const WA_NUMBER = '6282245224101';
+
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════ */
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  closeOrderDetail();
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'orders') renderOrders();
+  if (id === 'chatbot') renderChatbot();
+  if (id === 'customers') renderCustomers();
+  if (id === 'bot-settings') renderBotSettings();
+  if (id === 'analytics') renderAnalytics();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  // Stats counter
+  animateCounter('stat-revenue', 0, 42150000, v => 'Rp ' + (v/1e6).toFixed(1) + 'jt');
+  animateCounter('stat-orders', 0, 342, v => v.toString());
+  animateCounter('stat-customers', 0, DB.customers.length, v => v.toString());
+  animateCounter('stat-bot', 0, 47, v => v.toString());
+
+  // Chart
+  const chartData = [
+    {day:'Sen',val:65},{day:'Sel',val:80},{day:'Rab',val:55},{day:'Kam',val:90},
+    {day:'Jum',val:75},{day:'Sab',val:100},{day:'Min',val:85}
+  ];
+  const bars = document.getElementById('chartBars');
+  bars.innerHTML = '';
+  chartData.forEach((d,i) => {
+    bars.innerHTML += `
+      <div class="chart-bar-group">
+        <div class="chart-bar" style="height:${d.val}%;" title="${d.day}: ${d.val} order">
+          <div style="position:absolute;bottom:0;left:0;right:0;background:var(--grad);border-radius:6px 6px 0 0;animation:barGrow${i} 0.8s ${i*0.1}s ease both;height:0;"></div>
+        </div>
+        <div class="chart-day">${d.day}</div>
+      </div>`;
+  });
+  // Animate bar fills
+  setTimeout(() => {
+    bars.querySelectorAll('.chart-bar').forEach((b,i) => {
+      const fill = b.querySelector('div');
+      fill.style.transition = `height 0.8s ${i*0.08}s cubic-bezier(.4,0,.2,1)`;
+      fill.style.height = chartData[i].val + '%';
+    });
+  }, 50);
+
+  // Recent orders
+  const list = document.getElementById('recentOrdersList');
+  list.innerHTML = DB.orders.slice(0,5).map(o => `
+    <div class="order-mini" onclick="openOrderDetail('${o.id}')">
+      <div class="om-avatar" style="background:${avatarColor(o.name)}">${initials(o.name)}</div>
+      <div class="om-info">
+        <div class="om-name">${o.name}</div>
+        <div class="om-pkg">${o.pkg} · ${o.id}</div>
+      </div>
+      <span class="${statusClass(o.status)} status">${o.status}</span>
+    </div>`).join('');
+
+  // Recent messages
+  const msgList = document.getElementById('recentMsgList');
+  msgList.innerHTML = DB.conversations.slice(0,4).map(c => `
+    <div class="order-mini" onclick="showPage('chatbot',document.querySelector('[onclick*=chatbot]'));selectConv(${c.id-1})">
+      <div class="om-avatar" style="background:var(--ice3)">${c.avatar}</div>
+      <div class="om-info">
+        <div class="om-name">${c.name}</div>
+        <div class="om-pkg">${c.lastMsg}</div>
+      </div>
+      ${c.unread ? `<span class="conv-unread">${c.unread}</span>` : ''}
+    </div>`).join('');
+}
+
+function animateCounter(id, from, to, fmt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let cur = from; const dur = 1200; const start = Date.now();
+  const tick = () => {
+    const p = Math.min((Date.now()-start)/dur, 1);
+    cur = Math.floor(from + (to-from) * easeOut(p));
+    el.textContent = fmt(cur);
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  tick();
+}
+function easeOut(t) { return 1-Math.pow(1-t,3); }
+
+function updateChart(range) {
+  toast('📊','Chart Updated',`Menampilkan data ${range}`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ORDERS
+═══════════════════════════════════════════════════════════ */
+function renderOrders(data) {
+  const orders = data || DB.orders;
+  document.getElementById('orderCount').textContent = orders.length;
+  document.getElementById('ordersTbody').innerHTML = orders.map(o => `
+    <tr>
+      <td class="mono">${o.id}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:7px;background:${avatarColor(o.name)};display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0">${initials(o.name)}</div>
+          <div>
+            <div class="name-cell">${o.name}</div>
+            <div class="mono">${o.roblox}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="pkg-chip">${o.pkg}</span></td>
+      <td style="color:var(--white);font-weight:600;">Rp ${o.price.toLocaleString('id-ID')}</td>
+      <td><span class="${statusClass(o.status)} status">${o.status}</span></td>
+      <td class="mono">${o.date}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="openOrderDetail('${o.id}')">Detail</button>
+          <button class="btn btn-amber btn-sm" onclick="openUpdateOrder('${o.id}')">Update</button>
+          <button class="btn btn-wa btn-sm" onclick="openWA('${o.wa}','${o.id}','${o.pkg}')">WA</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterOrders(q) {
+  const s = document.getElementById('statusFilter').value;
+  let data = DB.orders.filter(o =>
+    (o.name.toLowerCase().includes(q.toLowerCase()) ||
+     o.roblox.toLowerCase().includes(q.toLowerCase()) ||
+     o.id.toLowerCase().includes(q.toLowerCase())) &&
+    (!s || o.status === s)
+  );
+  renderOrders(data);
+}
+function filterOrderStatus(s) {
+  const q = document.getElementById('orderSearch').value;
+  filterOrders(q);
+}
+function filterOrderPkg(p) {
+  renderOrders(p ? DB.orders.filter(o=>o.pkg===p) : DB.orders);
+}
+
+function openOrderDetail(id) {
+  const o = DB.orders.find(x=>x.id===id);
+  if(!o) return;
+  selectedOrderId = id;
+  const statusHistory = [
+    {event:'Order diterima',time:o.date+' 10:00',done:true},
+    {event:'Pembayaran dikonfirmasi',time:o.date+' 10:30',done:o.status!=='Menunggu'},
+    {event:'Joki dimulai',time:o.date+' 11:00',done:o.status==='Diproses'||o.status==='Selesai'},
+    {event:'Proses berlangsung',time:'Estimasi 3-5 hari',done:o.progress>50,active:o.status==='Diproses'},
+    {event:'Selesai & dikembalikan',time:o.status==='Selesai'?'Sudah selesai':'Belum',done:o.status==='Selesai'},
+  ];
+  document.getElementById('odpBody').innerHTML = `
+    <div class="odp-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--white)">${o.name}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text2)">${o.id}</div>
+        </div>
+        <span class="${statusClass(o.status)} status">${o.status}</span>
+      </div>
+      <div class="odp-info-grid">
+        <div class="odp-info-box"><div class="odp-ib-label">Paket</div><div class="odp-ib-val" style="color:var(--ice)">${o.pkg}</div></div>
+        <div class="odp-info-box"><div class="odp-ib-label">Harga</div><div class="odp-ib-val">Rp ${o.price.toLocaleString('id-ID')}</div></div>
+        <div class="odp-info-box"><div class="odp-ib-label">Roblox</div><div class="odp-ib-val">${o.roblox}</div></div>
+        <div class="odp-info-box"><div class="odp-ib-label">WhatsApp</div><div class="odp-ib-val">${o.wa}</div></div>
+      </div>
+    </div>
+    ${o.note?`<div class="odp-section"><div class="odp-sec-title">Catatan</div><div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:.83rem;color:var(--text)">${o.note}</div></div>`:''}
+    <div class="odp-section">
+      <div class="odp-sec-title">Progress Order</div>
+      <div style="margin-bottom:8px;display:flex;justify-content:space-between;font-size:.8rem;color:var(--text2)">
+        <span>Progress</span><span style="color:var(--ice)">${o.progress}%</span>
+      </div>
+      <div style="height:6px;background:rgba(168,216,240,.08);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+        <div style="height:100%;width:${o.progress}%;background:var(--grad);border-radius:10px;transition:width 1s ease"></div>
+      </div>
+    </div>
+    <div class="odp-section">
+      <div class="odp-sec-title">Riwayat Status</div>
+      <div class="timeline-mini">
+        ${statusHistory.map(s=>`
+          <div class="tl-item">
+            <div class="tl-dot ${s.done?'done':''} ${s.active?'active':''}">${s.done?'✓':s.active?'●':'○'}</div>
+            <div class="tl-content">
+              <div class="tl-event" style="${s.done?'color:var(--white)':''}">${s.event}</div>
+              <div class="tl-time">${s.time}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-top:8px;">
+      <button class="btn btn-ice" style="justify-content:center;" onclick="openUpdateOrder('${o.id}')">📊 Update Status/Progress</button>
+      <button class="btn btn-wa" style="justify-content:center;" onclick="openWA('${o.wa}','${o.id}','${o.pkg}')">💬 Chat WhatsApp</button>
+      ${o.status!=='Selesai'&&o.status!=='Batal'?`<button class="btn btn-green" style="justify-content:center;" onclick="markDone('${o.id}')">✅ Tandai Selesai</button>`:''}
+    </div>`;
+  document.getElementById('orderDetailPanel').classList.add('open');
+}
+function closeOrderDetail() { document.getElementById('orderDetailPanel').classList.remove('open'); }
+
+function openUpdateOrder(id) {
+  const o = DB.orders.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title">Update Order ${id}</div>
+    <div class="modal-sub">Perbarui status dan progress untuk pelanggan ${o.name}</div>
+    <div class="form-group"><label class="form-label">Status Baru</label>
+      <select class="form-select" id="upStatus">
+        <option ${o.status==='Baru'?'selected':''}>Baru</option>
+        <option ${o.status==='Menunggu'?'selected':''}>Menunggu</option>
+        <option ${o.status==='Diproses'?'selected':''}>Diproses</option>
+        <option ${o.status==='Selesai'?'selected':''}>Selesai</option>
+        <option ${o.status==='Batal'?'selected':''}>Batal</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Progress (%)</label>
+      <input type="number" class="form-input" id="upProgress" value="${o.progress}" min="0" max="100">
+    </div>
+    <div class="form-group"><label class="form-label">Pesan Update ke Pelanggan</label>
+      <textarea class="form-textarea" id="upMsg" placeholder="Contoh: Level kamu sudah naik ke 55! Estimasi selesai 2 hari lagi 🚀"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-ice" onclick="saveOrderUpdate('${id}')">Simpan & Kirim WA</button>
+    </div>`);
+}
+
+function saveOrderUpdate(id) {
+  const status = document.getElementById('upStatus').value;
+  const progress = parseInt(document.getElementById('upProgress').value);
+  const msg = document.getElementById('upMsg').value;
+  const o = DB.orders.find(x=>x.id===id);
+  o.status = status; o.progress = progress;
+  closeModal();
+  renderOrders();
+  if(selectedOrderId===id) openOrderDetail(id);
+  toast('✅','Order Diupdate',`${id} → ${status} (${progress}%)`);
+  if(msg) {
+    const waMsg = encodeURIComponent(`🧊 *Update Order Polar Store*\n\nHalo ${o.name}! Ada update untuk order kamu:\n\n📋 ID: ${id}\n📊 Status: ${status}\n📈 Progress: ${progress}%\n\n${msg}\n\n_Salam, Admin Polar Store ❄️_`);
+    setTimeout(()=>window.open(`https://wa.me/${WA_NUMBER}?text=${waMsg}`,'_blank'),500);
+  }
+}
+
+function markDone(id) {
+  const o = DB.orders.find(x=>x.id===id);
+  o.status = 'Selesai'; o.progress = 100;
+  closeOrderDetail();
+  renderOrders();
+  toast('🎉','Order Selesai',`${id} untuk ${o.name} telah ditandai selesai!`);
+}
+
+function openAddOrder() {
+  openModal(`
+    <div class="modal-title">+ Tambah Order Baru</div>
+    <div class="modal-sub">Tambahkan order baru secara manual</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nama Pelanggan</label><input class="form-input" id="ao-name" placeholder="Nama lengkap"></div>
+      <div class="form-group"><label class="form-label">No. WhatsApp</label><input class="form-input" id="ao-wa" placeholder="08xxxxxxxxxx"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Roblox Username</label><input class="form-input" id="ao-roblox" placeholder="Username"></div>
+      <div class="form-group"><label class="form-label">Level Saat Ini</label><input class="form-input" id="ao-level" placeholder="Contoh: 45"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Paket</label>
+        <select class="form-select" id="ao-pkg">
+          <option>Starter</option><option>Pro Racer</option><option>Legend</option>
+          <option>Daily Quest</option><option>Event Boost</option><option>Farming Koin</option><option>Custom</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Harga (Rp)</label><input class="form-input" type="number" id="ao-price" placeholder="129000"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="ao-note" placeholder="Permintaan khusus..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-ice" onclick="saveNewOrder()">Simpan Order</button>
+    </div>`);
+}
+
+function saveNewOrder() {
+  const name = document.getElementById('ao-name').value;
+  if(!name){toast('⚠️','Error','Nama pelanggan wajib diisi!');return;}
+  const newId = 'PS-' + String(DB.orders.length + 93).padStart(4,'0');
+  DB.orders.unshift({
+    id:newId, name, roblox:document.getElementById('ao-roblox').value,
+    wa:document.getElementById('ao-wa').value,
+    pkg:document.getElementById('ao-pkg').value,
+    price:parseInt(document.getElementById('ao-price').value)||0,
+    status:'Baru', date:new Date().toISOString().slice(0,10),
+    level:document.getElementById('ao-level').value,
+    progress:0, note:document.getElementById('ao-note').value
+  });
+  closeModal(); renderOrders();
+  document.getElementById('badge-orders').textContent = DB.orders.filter(o=>o.status==='Baru').length;
+  toast('✅','Order Ditambahkan',`${newId} berhasil dibuat`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHATBOT
+═══════════════════════════════════════════════════════════ */
+function renderChatbot() {
+  renderConvList();
+  selectConv(0);
+}
+
+function renderConvList() {
+  document.getElementById('convList').innerHTML = DB.conversations.map((c,i) => `
+    <div class="conv-item ${i===activeConv?'active':''}" onclick="selectConv(${i})">
+      <div class="conv-av">${c.avatar}
+        ${c.online?'<div class="conv-online"></div>':''}
+      </div>
+      <div class="conv-info">
+        <div class="conv-name">${c.name}<span class="conv-time">${c.time}</span></div>
+        <div class="conv-msg">${c.lastMsg}</div>
+      </div>
+      ${c.unread?`<div class="conv-unread">${c.unread}</div>`:''}
+    </div>`).join('');
+}
+
+function selectConv(i) {
+  activeConv = i;
+  const c = DB.conversations[i];
+  c.unread = 0;
+  renderConvList();
+  // Header
+  document.getElementById('chatWinAv').textContent = c.avatar;
+  document.getElementById('chatWinName').textContent = c.name;
+  document.getElementById('chatWinStatus').textContent = c.online ? '● Online' : '○ Offline';
+  document.getElementById('chatWinStatus').style.color = c.online ? 'var(--green)' : 'var(--text2)';
+  // Info panel
+  document.getElementById('ciAv').textContent = c.avatar;
+  document.getElementById('ciName').textContent = c.name;
+  document.getElementById('ciWa').textContent = '+62 ' + c.wa.replace('08','8').replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');
+  // Find customer data
+  const cust = DB.customers.find(x=>x.wa===c.wa);
+  const order = DB.orders.find(x=>x.wa===c.wa);
+  if(cust){
+    document.getElementById('ci-roblox').textContent = cust.roblox;
+    document.getElementById('ci-total-order').textContent = cust.orders + ' order';
+    document.getElementById('ci-total-pay').textContent = 'Rp ' + cust.totalSpend.toLocaleString('id-ID');
+  }
+  if(order){
+    document.getElementById('ci-level').textContent = 'Level ' + order.level;
+    document.getElementById('ci-pkg').textContent = order.pkg;
+    document.getElementById('ci-status').textContent = order.status;
+    document.getElementById('ci-progress').textContent = order.progress + '%';
+  }
+  renderMessages();
+  document.getElementById('badge-chat').textContent = DB.conversations.filter(x=>x.unread>0).length||'';
+}
+
+function renderMessages() {
+  const c = DB.conversations[activeConv];
+  const box = document.getElementById('chatMessages');
+  box.innerHTML = c.messages.map(m => {
+    const isUser = m.role==='user', isBot=m.role==='bot', isAdmin=m.role==='admin';
+    const cls = isUser ? 'user' : 'bot';
+    const label = isBot ? '🤖 Bot' : isAdmin ? '👤 Admin' : '';
+    return `<div class="msg ${cls}">
+      ${label?`<div style="font-size:.65rem;color:var(--text2);margin-bottom:2px;${isUser?'text-align:right':''}">${label}</div>`:''}
+      <div class="msg-bubble">${m.text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}</div>
+      <div class="msg-time">${m.time}</div>
+    </div>`;
+  }).join('');
+  setTimeout(() => box.scrollTop = box.scrollHeight, 50);
+}
+
+function sendAdminMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const c = DB.conversations[activeConv];
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  c.messages.push({role:'admin',text,time});
+  c.lastMsg = text; c.time = 'Baru';
+  input.value = '';
+  renderMessages(); renderConvList();
+  toast('📤','Pesan Terkirim','Admin → '+c.name);
+}
+
+function simulateBotReply(conv, userText) {
+  if(!botActive) return;
+  const lower = userText.toLowerCase();
+  let reply = null;
+  for(const r of DB.botReplies) {
+    if(!r.enabled) continue;
+    const triggers = r.trigger.split('|');
+    if(triggers.some(t=>lower.includes(t))) { reply=r.response; break; }
+  }
+  if(!reply) {
+    // Specific menu
+    if(userText==='1') reply = '📦 *Paket Polar Store*\n\n⭐ Starter — Rp 49.000\n🚀 Pro Racer — Rp 129.000\n👑 Legend — Rp 299.000\n💎 Bundle Full — Rp 199.000\n🌟 Monthly Pass — Rp 450.000\n\nKetik nama paket untuk detail!';
+    else if(userText==='2') reply = '📝 Untuk order, kirimkan:\n\n1. Username Roblox\n2. Level saat ini\n3. Paket yang diinginkan\n4. Nomor WA aktif\n\nAdmin akan konfirmasi dalam 5 menit! ⚡';
+    else if(userText==='3') reply = 'Kirimkan ID Order kamu\n(format: PS-XXXX)\n\nContoh: PS-0092';
+    else if(userText==='4') reply = '📞 Menghubungkan ke admin...\nMohon tunggu sebentar! 🙏';
+    else reply = 'Maaf, saya tidak mengerti 😅\n\nKetik *menu* untuk kembali ke menu utama, atau hubungi admin dengan ketik [4] 🙏';
+  }
+  // Show typing
+  const msgBox = document.getElementById('chatMessages');
+  const typing = document.createElement('div');
+  typing.className = 'msg bot'; typing.id = 'typing-indicator';
+  typing.innerHTML = '<div class="msg-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  msgBox.appendChild(typing);
+  msgBox.scrollTop = msgBox.scrollHeight;
+  setTimeout(() => {
+    typing.remove();
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    conv.messages.push({role:'bot',text:reply,time});
+    conv.lastMsg = reply.slice(0,40)+'...';
+    renderMessages(); renderConvList();
+    document.getElementById('botMsgCount') && (document.getElementById('botMsgCount').textContent = parseInt(document.getElementById('botMsgCount').textContent)+1);
+  }, 1500);
+}
+
+// Intercept chat input to also simulate user reply and trigger bot
+document.addEventListener('DOMContentLoaded', () => {
+  const chatInput = document.getElementById('chatInput');
+  if(chatInput) chatInput.addEventListener('keydown', function(e) {
+    if(e.key==='Enter') {
+      e.preventDefault();
+      const text = this.value.trim();
+      if(!text) return;
+      // Send as admin first
+      const c = DB.conversations[activeConv];
+      const now = new Date();
+      const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      c.messages.push({role:'admin',text,time});
+      c.lastMsg = text; c.time = 'Baru';
+      this.value = '';
+      renderMessages(); renderConvList();
+    }
+  });
+});
+
+function openWhatsApp() {
+  const c = DB.conversations[activeConv];
+  const msg = encodeURIComponent(`Halo ${c.name.split(' ')[0]}! Admin Polar Store di sini 👋`);
+  window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`,'_blank');
+}
+
+function openUpdateStatus() {
+  const c = DB.conversations[activeConv];
+  const order = DB.orders.find(x=>x.wa===c.wa);
+  if(order) openUpdateOrder(order.id);
+  else toast('⚠️','Tidak Ditemukan','Tidak ada order aktif untuk pelanggan ini');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOMERS
+═══════════════════════════════════════════════════════════ */
+function renderCustomers(data) {
+  const custs = data || DB.customers;
+  document.getElementById('custCount').textContent = custs.length;
+  document.getElementById('customersGrid').innerHTML = custs.map(c => `
+    <div class="customer-card" onclick="openCustomerDetail('${c.id}')">
+      <div class="cust-av" style="background:${avatarColor(c.name)}">${initials(c.name)}</div>
+      <div class="cust-info">
+        <div class="cust-name">${c.name}</div>
+        <div class="cust-wa">📱 ${c.wa}</div>
+        <div class="cust-stats">
+          <span class="cs-item"><strong>${c.orders}</strong> order</span>
+          <span class="cs-item">Rp <strong>${(c.totalSpend/1000).toFixed(0)}rb</strong></span>
+          <span class="cs-item">📍 ${c.city}</span>
+        </div>
+      </div>
+      <span class="cust-badge ${c.type==='VIP'?'cb-vip':c.type==='Baru'?'cb-new':'cb-regular'}">${c.type}</span>
+    </div>`).join('');
+}
+
+function filterCustomers(q) {
+  renderCustomers(DB.customers.filter(c=>
+    c.name.toLowerCase().includes(q.toLowerCase()) || c.wa.includes(q) || c.roblox.toLowerCase().includes(q.toLowerCase())
+  ));
+}
+
+function openCustomerDetail(id) {
+  const c = DB.customers.find(x=>x.id===id);
+  const orders = DB.orders.filter(o=>o.wa===c.wa);
+  openModal(`
+    <div class="modal-title">${c.name}</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <span class="cust-badge ${c.type==='VIP'?'cb-vip':c.type==='Baru'?'cb-new':'cb-regular'}">${c.type}</span>
+      <span class="status s-done">📱 ${c.wa}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div class="odp-info-box"><div class="odp-ib-label">Roblox</div><div class="odp-ib-val">${c.roblox}</div></div>
+      <div class="odp-info-box"><div class="odp-ib-label">Kota</div><div class="odp-ib-val">${c.city}</div></div>
+      <div class="odp-info-box"><div class="odp-ib-label">Total Order</div><div class="odp-ib-val" style="color:var(--ice)">${c.orders}</div></div>
+      <div class="odp-info-box"><div class="odp-ib-label">Total Belanja</div><div class="odp-ib-val" style="color:var(--green)">Rp ${c.totalSpend.toLocaleString('id-ID')}</div></div>
+    </div>
+    ${orders.length?`<div style="font-size:.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Riwayat Order</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+      ${orders.map(o=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;">
+        <div>
+          <div style="font-size:.8rem;font-weight:600;color:var(--white)">${o.pkg}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text2)">${o.id} · ${o.date}</div>
+        </div>
+        <span class="${statusClass(o.status)} status">${o.status}</span>
+      </div>`).join('')}
+    </div>`:''}
+    <div class="modal-actions">
+      <button class="btn btn-wa" onclick="window.open('https://wa.me/${WA_NUMBER}','_blank');closeModal()">💬 Chat WA</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Tutup</button>
+    </div>`);
+}
+
+function openAddCustomer() {
+  openModal(`
+    <div class="modal-title">+ Tambah Pelanggan</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nama</label><input class="form-input" id="nc-name" placeholder="Nama lengkap"></div>
+      <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" id="nc-wa" placeholder="08xxxxxxxxxx"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Roblox Username</label><input class="form-input" id="nc-roblox" placeholder="Username"></div>
+      <div class="form-group"><label class="form-label">Kota</label><input class="form-input" id="nc-city" placeholder="Jakarta"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Tipe</label>
+      <select class="form-select" id="nc-type"><option>Baru</option><option>Regular</option><option>VIP</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-ice" onclick="saveNewCustomer()">Simpan</button>
+    </div>`);
+}
+
+function saveNewCustomer() {
+  const name = document.getElementById('nc-name').value;
+  if(!name){toast('⚠️','Error','Nama wajib diisi');return;}
+  DB.customers.push({
+    id:'C'+String(DB.customers.length+1).padStart(3,'0'),
+    name, wa:document.getElementById('nc-wa').value,
+    roblox:document.getElementById('nc-roblox').value,
+    city:document.getElementById('nc-city').value,
+    orders:0, totalSpend:0,
+    type:document.getElementById('nc-type').value,
+    joined:new Date().toISOString().slice(0,10)
+  });
+  closeModal(); renderCustomers();
+  toast('✅','Pelanggan Ditambahkan',name+' berhasil disimpan');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BOT SETTINGS
+═══════════════════════════════════════════════════════════ */
+function renderBotSettings() {
+  renderFlowItems();
+  renderKeywords();
+  renderQuickReplies();
+}
+
+function renderFlowItems() {
+  document.getElementById('flowItems').innerHTML = DB.botReplies.map((r,i) => `
+    <div class="flow-item">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+        <div class="toggle-sw ${r.enabled?'':'off'}" style="width:28px;height:16px;" onclick="toggleReply(${i})">
+          <style>.toggle-sw::after{width:10px;height:10px;top:3px;left:3px;}.toggle-sw.off::after{left:15px;}</style>
+        </div>
+        <span class="flow-trigger">${r.trigger.split('|')[0]}</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-response">${r.response}</span>
+      </div>
+      <button class="flow-edit" onclick="editReply(${i})">Edit</button>
+    </div>`).join('');
+}
+
+function toggleReply(i) { DB.botReplies[i].enabled = !DB.botReplies[i].enabled; renderFlowItems(); }
+
+function editReply(i) {
+  const r = DB.botReplies[i];
+  openModal(`
+    <div class="modal-title">Edit Balasan Bot</div>
+    <div class="form-group"><label class="form-label">Kata Kunci Trigger (pisah dengan |)</label>
+      <input class="form-input" id="er-trigger" value="${r.trigger}">
+    </div>
+    <div class="form-group"><label class="form-label">Balasan Bot</label>
+      <textarea class="form-textarea" id="er-response">${r.response}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-ice" onclick="saveReplyEdit(${i})">Simpan</button>
+    </div>`);
+}
+
+function saveReplyEdit(i) {
+  DB.botReplies[i].trigger = document.getElementById('er-trigger').value;
+  DB.botReplies[i].response = document.getElementById('er-response').value;
+  closeModal(); renderFlowItems();
+  toast('✅','Balasan Diupdate','Kata kunci bot berhasil disimpan');
+}
+
+function openAddReply() {
+  openModal(`
+    <div class="modal-title">+ Tambah Balasan Baru</div>
+    <div class="form-group"><label class="form-label">Kata Kunci Trigger</label>
+      <input class="form-input" id="nr-trigger" placeholder="refund|komplain|masalah">
+    </div>
+    <div class="form-group"><label class="form-label">Balasan Bot</label>
+      <textarea class="form-textarea" id="nr-response" placeholder="Untuk komplain atau refund, silakan hubungi admin kami..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-ice" onclick="saveNewReply()">Simpan</button>
+    </div>`);
+}
+function saveNewReply() {
+  const t=document.getElementById('nr-trigger').value;
+  const r=document.getElementById('nr-response').value;
+  if(!t||!r){toast('⚠️','Error','Lengkapi semua field');return;}
+  DB.botReplies.push({trigger:t,response:r,enabled:true});
+  closeModal(); renderFlowItems();
+  toast('✅','Balasan Ditambahkan','Kata kunci baru aktif');
+}
+
+function renderKeywords() {
+  document.getElementById('keywordTags').innerHTML = DB.keywords.map((k,i) => `
+    <span class="kw-tag">${k}<span class="kw-remove" onclick="removeKeyword(${i})">×</span></span>`).join('');
+}
+function addKeyword() {
+  const v = document.getElementById('kwInput').value.trim();
+  if(!v) return;
+  DB.keywords.push(v);
+  document.getElementById('kwInput').value = '';
+  renderKeywords();
+}
+function removeKeyword(i) { DB.keywords.splice(i,1); renderKeywords(); }
+
+function renderQuickReplies() {
+  document.getElementById('quickReplyList').innerHTML = DB.quickReplies.map((q,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;">
+      <div style="flex:1;font-size:.78rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${q}</div>
+      <button style="font-size:.7rem;padding:3px 8px;border-radius:5px;background:rgba(168,216,240,.08);border:1px solid rgba(168,216,240,.15);color:var(--ice);cursor:pointer;white-space:nowrap;" onclick="useQuickReply(${i})">Kirim</button>
+    </div>`).join('');
+}
+function useQuickReply(i) {
+  document.getElementById('chatInput').value = DB.quickReplies[i];
+  showPage('chatbot', document.querySelector('[onclick*=chatbot]'));
+}
+
+function saveGreeting() { toast('✅','Tersimpan','Pesan sambutan bot berhasil diperbarui!'); }
+
+/* ═══════════════════════════════════════════════════════════
+   ANALYTICS
+═══════════════════════════════════════════════════════════ */
+function renderAnalytics() {
+  const pkgs = ['Pro Racer','Legend','Starter','Daily Quest','Event Boost','Farming Koin'];
+  const vals = [35,28,18,10,6,3];
+  const colors = ['var(--ice)','var(--amber)','var(--green)','var(--purple)','#ff6b6b','#60a5fa'];
+  document.getElementById('pkgChart').innerHTML = pkgs.map((p,i) => `
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:90px;font-size:.78rem;color:var(--text2);text-align:right;white-space:nowrap;">${p}</div>
+      <div style="flex:1;height:20px;background:rgba(168,216,240,.06);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${vals[i]}%;background:${colors[i]};border-radius:4px;transition:width 1s ${i*0.1}s ease;"></div>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--white);width:35px;">${vals[i]}%</div>
+    </div>`).join('');
+
+  const days = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  const dayVals = [42,58,35,71,55,89,67];
+  document.getElementById('weekChart').innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:8px;height:100px;">
+      ${days.map((d,i)=>`
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">
+          <div style="width:100%;background:rgba(168,216,240,.08);border-radius:5px 5px 0 0;position:relative;height:${dayVals[i]}px;overflow:hidden;">
+            <div style="position:absolute;bottom:0;left:0;right:0;background:var(--grad);border-radius:5px 5px 0 0;height:0;transition:height .8s ${i*0.08}s ease;" class="anaBar"></div>
+          </div>
+          <div style="font-size:.65rem;color:var(--text2);font-family:'JetBrains Mono',monospace;">${d}</div>
+        </div>`).join('')}
+    </div>`;
+  setTimeout(()=>{
+    document.querySelectorAll('.anaBar').forEach((b,i)=>{b.style.height=dayVals[i]+'px';});
+  },100);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════════════ */
+function saveSettings() { toast('✅','Pengaturan Disimpan','Konfigurasi berhasil diperbarui'); }
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════════════════ */
+function openWA(wa, orderId, pkg) {
+  const msg = encodeURIComponent(`Halo! Ini admin Polar Store ❄️\n\nUpdate untuk order kamu:\n📋 ID: ${orderId}\n📦 Paket: ${pkg}\n\nAda yang ingin ditanyakan? 😊`);
+  window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`,'_blank');
+}
+
+function statusClass(s) {
+  if(s==='Baru') return 's-new';
+  if(s==='Diproses') return 's-process';
+  if(s==='Selesai') return 's-done';
+  if(s==='Batal') return 's-cancel';
+  if(s==='Menunggu') return 's-waiting';
+  return 's-new';
+}
+function initials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function avatarColor(name) {
+  const cols = ['#1e5f8e','#1a7a5e','#7a4a1a','#5e1a5f','#1a3a7a','#7a1a2a','#2a5e1a','#4a1a7a'];
+  let h = 0; for(let c of name) h = ((h<<5)-h)+c.charCodeAt(0);
+  return cols[Math.abs(h)%cols.length];
+}
+
+/* MODAL */
+function openModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* TOAST */
+function toast(icon, title, msg, dur=3500) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<div class="t-icon">${icon}</div><div><div class="t-title">${title}</div><div class="t-msg">${msg}</div></div>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('hide'); setTimeout(()=>t.remove(),350); }, dur);
+}
+
+/* NOTIF DROPDOWN */
+function toggleNotif() { document.getElementById('notifDropdown').classList.toggle('open'); }
+function clearNotifs() {
+  document.getElementById('notifDropdown').querySelectorAll('.nd-dot').forEach(d=>d.remove());
+  notifCount=0; document.getElementById('notifBadge').style.display='none';
+  document.getElementById('notifDropdown').classList.remove('open');
+  toast('✅','Notifikasi','Semua notifikasi ditandai dibaca');
+}
+document.addEventListener('click', e => {
+  if(!document.getElementById('notifBtn').contains(e.target))
+    document.getElementById('notifDropdown').classList.remove('open');
+});
+
+/* BOT TOGGLE */
+function toggleBot() {
+  botActive = !botActive;
+  const sw = document.getElementById('botToggle');
+  const sw2 = document.getElementById('botToggle2');
+  const lb = document.getElementById('botLabel');
+  const lb2 = document.getElementById('botLabel2');
+  if(botActive) {
+    sw.classList.remove('off'); sw2&&sw2.classList.remove('off');
+    lb.textContent='Aktif'; lb.style.color='var(--green)';
+    lb2&&(lb2.textContent='Aktif',lb2.style.color='var(--green)');
+    toast('🤖','Bot Diaktifkan','Chatbot WA sekarang aktif 24/7');
+  } else {
+    sw.classList.add('off'); sw2&&sw2.classList.add('off');
+    lb.textContent='Nonaktif'; lb.style.color='var(--red)';
+    lb2&&(lb2.textContent='Nonaktif',lb2.style.color='var(--red)');
+    toast('⚠️','Bot Dinonaktifkan','Pesan masuk perlu dibalas manual');
+  }
+}
+
+/* SIMULATE INCOMING MESSAGE */
+const incomingMsgs = [
+  {conv:1,text:'Kak udah level berapa sekarang?'},
+  {conv:0,text:'Kapan selesainya min?'},
+  {conv:3,text:'Bisa minta update progress?'},
+  {conv:1,text:'1'},
+  {conv:2,text:'berapa harganya?'},
+];
+let incomingIdx = 0;
+setInterval(() => {
+  const im = incomingMsgs[incomingIdx % incomingMsgs.length]; incomingIdx++;
+  const c = DB.conversations[im.conv];
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  c.messages.push({role:'user',text:im.text,time});
+  c.lastMsg = im.text; c.time = 'Baru';
+  if(im.conv !== activeConv) { c.unread = (c.unread||0)+1; }
+  // Trigger bot response
+  simulateBotReply(c, im.text);
+  // Update badge
+  const totalUnread = DB.conversations.reduce((a,x)=>a+(x.unread||0),0);
+  const badge = document.getElementById('badge-chat');
+  badge.textContent = totalUnread || '';
+  badge.style.display = totalUnread ? '' : 'none';
+  // Refresh if on chatbot page
+  if(document.getElementById('page-chatbot').classList.contains('active')) {
+    if(im.conv === activeConv) renderMessages();
+    renderConvList();
+  }
+  // Show toast
+  toast('💬','Pesan Baru',`${c.name}: "${im.text.slice(0,30)}..."`);
+}, 18000);
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+  setTimeout(()=>toast('❄️','Selamat Datang','Dashboard Polar Store siap digunakan!'), 600);
+  setTimeout(()=>toast('💬','Pesan Baru','Rizky K. mengirim pesan baru'),3500);
+  setTimeout(()=>toast('📦','Order Masuk','Order baru #PS-0092 dari Aldi S.'),6000);
+});
+</script>
+</body>
+</html>
